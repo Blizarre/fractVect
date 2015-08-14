@@ -49,16 +49,14 @@ pixel* generateImage(size_t width, size_t height)
 {
     pixel * im = new pixel[width * height];
 
-    int i, j;
-    float x, y, val;
     double xMin = -2, xMax = 2, yMin = -1, yMax = 1;
     double xSpan = (xMax - xMin) / width;
     double ySpan = (yMax - yMin) / height;
     int maxIter = 255;
 
-#pragma omp parallel
-    for(j = 0; j < height; j++)
-        for(i = 0; i < width; i++)
+#pragma omp parallel for
+    for(int j = 0; j < height; j++)
+        for(int i = 0; i < width; i++)
         {
             // z0 = position
             float x0 = i * xSpan + xMin;
