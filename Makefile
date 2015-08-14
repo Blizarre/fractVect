@@ -1,6 +1,6 @@
 CXXFLAGS+=-O3 -std=c++11 -fopenmp
 INCLUDES_DIR=
-LIBS=-lpng -lX11 -lpthread
+LIBS=-lgomp -lpng -lX11 -lpthread
 CXX=g++
 
 test: main

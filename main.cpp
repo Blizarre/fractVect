@@ -50,6 +50,7 @@ pixel* generateImage(size_t width, size_t height)
     double ySpan = (yMax - yMin) / height;
     int maxIter = 255;
 
+    #pragma omp parallel
     for(j = 0; j < height; j++)
         for(i = 0; i < width; i++)
         {
