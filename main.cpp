@@ -4,7 +4,7 @@
 #include "timePoints.h"
 
 using namespace std;
-pixel* generateImage(size_t width, size_t height);
+pixel* generateImage(int width, int height);
 
 int main(int argc, char* argv[])
 {
@@ -33,25 +33,20 @@ int main(int argc, char* argv[])
     t.reset();
     pixel* im = generateImage(w, h);
     t.checkPoint("image generated in {TIME} ms.");
-    writeImage(im, "out.png", w, h);
+    writeImage(im, "out.bmp", w, h);
     t.checkPoint("image saved in {TIME} ms.");
 
     return 0;
 }
 
-float norm(float x, float y)
-{
-    float val = sqrt(x*x + y*y);
-    return val;
-}
 
-pixel* generateImage(size_t width, size_t height)
+pixel* generateImage(int width, int height)
 {
     pixel * im = new pixel[width * height];
 
-    double xMin = -2, xMax = 2, yMin = -1, yMax = 1;
-    double xSpan = (xMax - xMin) / width;
-    double ySpan = (yMax - yMin) / height;
+    float xMin = -2, xMax = 2, yMin = -1, yMax = 1;
+	float xSpan = (xMax - xMin) / width;
+	float ySpan = (yMax - yMin) / height;
     int maxIter = 255;
 
 #pragma omp parallel for
