@@ -4,66 +4,163 @@
 #include "timePoints.h"
 #include "immintrin.h"
 #include <memory>
+#include "SDLWrapper.h"
 
 using namespace std;
-std::unique_ptr<pixel> generateImage(int width, int height, const Colormap& c);
-std::unique_ptr<pixel> generateImageAVX(int width, int height, const Colormap& c);
+
+enum PerfType { X86, AVX2};
+
+struct params {
+	int windowWidth, windowHeight;
+	float fractWidth, fractHeight;
+	float fractPosX, fractPosY;
+	int pitch; // distance between rows in !bytes!
+	pixel* data; // pixel data
+	Colormap colormap;
+	PerfType perf;
+
+	size_t nbPixels() { return windowWidth * windowHeight;  }
+};
+
+void generateImageX86(params &p);
+void generateImageAVX(params &p);
+
+void saveImage(params &p)
+{
+	std::unique_ptr<pixel[]> buffer = make_unique<pixel[]>(p.windowWidth * p.windowHeight);
+	p.data = buffer.get();
+	p.pitch = p.windowWidth * 4;
+
+	switch (p.perf) // use inheritance
+	{
+	case PerfType::AVX2:
+		generateImageAVX(p);
+		break;
+	case PerfType::X86:
+		generateImageX86(p);
+		break;
+	}
+	writeImage(p.data, "out.bmp", p.windowWidth, p.windowHeight);
+}
+
+void renderImage(params& p, SDLWrapper& sdl)
+{
+	TimePoints t;
+	
+	p.data = sdl.startWorkingOnTexture(&p.pitch);
+	
+	switch (p.perf) // use inheritance
+	{
+		case PerfType::AVX2:
+			generateImageAVX(p);
+			break;
+		case PerfType::X86:
+			generateImageX86(p);
+			break;
+	}
+	t.checkPoint("image generated using AVX intrinsics in {TIME} ms.");
+	sdl.renderTexture();
+	t.checkPoint("image rendered to screen in {TIME} ms.");
+}
 
 
 int main(int argc, char* argv[])
 {
-
 	TimePoints t;
 	Colormap c;
+	params p;
+	p.perf = PerfType::X86;
+
 	if (argc != 1 + 2)
 	{
 		cout << "usage:\n\t" << argv[0] << " width height" << endl;
 		return 1;
 	}
 
-	size_t w, h;
-	w = atol(argv[1]), h = atol(argv[2]);
+	p.windowWidth = atol(argv[1]), p.windowHeight = atol(argv[2]);
 
-	if (w * h == 0)
+	if (p.nbPixels() == 0)
 	{
 		cout << "Invalid argument, width AND height must be non-null" << endl;
 		return 2;
 	}
 
-	if (w % 8 != 0)
+	if (p.windowWidth % 8 != 0)
 	{
 		cout << "width must be a multiple of 8" << endl;
 		return 3;
 	}
 
-	t.reset();
-	std::unique_ptr<pixel> imAVX = generateImageAVX(w, h, c);
-	t.checkPoint("image generated using AVX intrinsics in {TIME} ms.");
+	SDLWrapper sdl(p.windowWidth, p.windowHeight);
 
-	writeImage(imAVX.get(), "outAVX.bmp", w, h);
+	std::unique_ptr<pixel[]> im = std::make_unique<pixel[]>(p.nbPixels());
 
 	t.reset();
-	std::unique_ptr<pixel> im = generateImage(w, h, c);
-	t.checkPoint("image generated in {TIME} ms.");
+	p.fractPosX = 0.0;
+	p.fractPosY = 0.0;
+	p.colormap = c;
 
-	writeImage(im.get(), "out.bmp", w, h);
+	p.fractHeight = 1.0;
+	p.fractWidth = p.windowWidth * p.fractHeight / p.windowHeight;
+	
+	bool cont = true;
+
+	sdl.onMouseMotion([&](size_t x, size_t y)
+	{
+		p.fractPosX = - p.fractWidth / 2.0f + (p.windowWidth / 2.0f - x) / (p.windowWidth);
+		p.fractPosY = - p.fractHeight / 2.0f + (p.windowHeight / 2.0f - y) / (p.windowHeight);
+	});
+	
+	sdl.onKeyPress(SDLK_o, [&]() {
+		if(p.perf == PerfType::AVX2)
+			p.perf = PerfType::X86;
+		else
+			p.perf = PerfType::AVX2;
+	});
+
+
+	sdl.onKeyPress(SDLK_p, [&]() {
+		p.fractWidth *= 1.2; p.fractHeight *= 1.2;
+	});
+
+	sdl.onKeyPress(SDLK_m, [&]() { 
+		p.fractWidth *= 0.8; p.fractHeight *= 0.8; 
+	});
+
+	sdl.onKeyPress(SDLK_s, [&]() {
+		saveImage(p);
+	});
+
+	sdl.onKeyPress(SDLK_ESCAPE, [&]() { cont = false; });
+	sdl.onQuitEvent([&]() { cont = false; });
+
+	while (cont)
+	{
+		sdl.processEvents();
+		renderImage(p, sdl);
+	}
+
 	return 0;
 }
 
 
-std::unique_ptr<pixel> generateImage(int width, int height, const Colormap& c)
+void generateImageX86(params &p)
 {
-	pixel * im = new pixel[width * height];
-	const pixel * colormap = c.getColorMap();
+	const pixel * colormap = p.colormap.getColorMap();
 
-	float xMin = -2, xMax = 2, yMin = -1, yMax = 1;
-	float xSpan = (xMax - xMin) / width;
-	float ySpan = (yMax - yMin) / height;
+	float xMin = p.fractPosX;
+	float xMax = xMin + p.fractWidth;
+
+	float yMin = p.fractPosY;
+	float yMax = yMin + p.fractHeight;
+
+	float xSpan = xSpan = (xMax - xMin) / p.windowWidth;
+	float ySpan = (yMax - yMin) / p.windowHeight;
 	int maxIter = 255;
 
 #pragma omp parallel for
-	for (int j = 0; j < height; j++)
-		for (int i = 0; i < width; i++)
+	for (int j = 0; j < p.windowHeight; j++)
+		for (int i = 0; i < p.windowWidth; i++)
 		{
 			// z0 = position
 			float x0 = i * xSpan + xMin;
@@ -83,29 +180,31 @@ std::unique_ptr<pixel> generateImage(int width, int height, const Colormap& c)
 				iter++;
 			}
 
-			im[j * width + i] = colormap[iter];
+			p.data[j * p.pitch/4 + i] = colormap[iter];
 		}
-
-	return std::unique_ptr<pixel>(im);
 }
 
 
-
-std::unique_ptr<pixel> generateImageAVX(int width, int height, const Colormap& c)
+void generateImageAVX(params &p)
 {
-	pixel * im = new pixel[width * height];
-	const pixel * colormap = c.getColorMap();
+	//size_t width, size_t height, float originX, float originY, float fractWidth, float fractHeight, pixel* im, const Colormap& c, int pitch)
 
-	float xMin = -2, xMax = 2, yMin = -1, yMax = 1;
+	const pixel * colormap = p.colormap.getColorMap();
+
+	float xMin = p.fractPosX;
+	float xMax = xMin + p.fractWidth;
+	
+	float yMin = p.fractPosY;
+	float yMax = yMin + p.fractHeight;
 
 	__m256 basis = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	__m256 xSpan = _mm256_set1_ps((xMax - xMin) / width);
-	float ySpan = (yMax - yMin) / height;
+	__m256 xSpan = _mm256_set1_ps((xMax - xMin) / p.windowWidth);
+	float ySpan = (yMax - yMin) / p.windowHeight;
 	__m256 xMin256 = _mm256_set1_ps(xMin);
 
 #pragma omp parallel for
-	for (int j = 0; j < height; j++)
-		for (int i = 0; i < width; i += 8)
+	for (int j = 0; j < p.windowHeight; j++)
+		for (int i = 0; i < p.windowWidth; i += 8)
 		{
 			// z0 = position
 			__m256 offsets = _mm256_add_ps(basis, _mm256_set1_ps(static_cast<float>(i)));
@@ -148,8 +247,6 @@ std::unique_ptr<pixel> generateImageAVX(int width, int height, const Colormap& c
 			__m256i result = _mm256_cvtps_epi32(iter);
 
 			for (int k = 0; k < 8; k++)
-				im[j * width + i + k] = colormap[result.m256i_i32[k]];
+				p.data[j * (p.pitch/4) + i + k] = colormap[result.m256i_i32[k]];
 		}
-
-	return std::unique_ptr<pixel>(im);
 }
