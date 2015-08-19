@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <SDL_ttf.h>
 
 class SDLWrapper
 {
@@ -21,10 +22,10 @@ public:
 	pixel*  startWorkingOnTexture(int * pitch)
 	{
 		void* pixels;
-		int res = SDL_LockTexture(m_screen, NULL, &pixels, pitch);
+		int res = SDL_LockTexture(m_screen, nullptr, &pixels, pitch);
 		if (res != 0)
 		{
-			std::cout << "something bad happenned" << std::endl;
+			throw std::runtime_error("something bad happened");
 		}
 
 		return reinterpret_cast<pixel*>(pixels);
@@ -33,16 +34,19 @@ public:
 	void renderTexture()
 	{
 		SDL_UnlockTexture(m_screen);
-		SDL_RenderCopy(m_renderer, m_screen, NULL, NULL);
+		SDL_RenderCopy(m_renderer, m_screen, nullptr, nullptr);
+
+		//SDL_RenderCopy(m_renderer, m_overlay, nullptr, nullptr);
+		SDL_DestroyTexture(m_overlay);
+		m_overlay = nullptr;
 		SDL_RenderPresent(m_renderer);
 	}
 
-	void updateImage(pixel* data)
+	void writeText(char* text)
 	{
-		// Will do for now, TODO: use better function
-		SDL_UpdateTexture(m_screen, nullptr, data, m_width * 4);
-		SDL_RenderCopy(m_renderer, m_screen, NULL, NULL);
-		SDL_RenderPresent(m_renderer);
+		SDL_Surface* surf = TTF_RenderText_Shaded(m_font, text, m_white, m_black);
+		m_overlay = SDL_CreateTextureFromSurface(m_renderer, surf);
+		SDL_FreeSurface(surf);
 	}
 
 	/***
@@ -70,6 +74,7 @@ public:
 		SDL_DestroyTexture(m_screen);
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
+		TTF_CloseFont(m_font);
 	}
 
 protected:
@@ -80,6 +85,8 @@ protected:
 	SDL_Texture* m_screen;
 	SDL_Renderer* m_renderer;
 	SDL_Window* m_window;
-
-	int m_width, m_height;
+	SDL_Texture* m_overlay = nullptr;
+	TTF_Font* m_font;
+	SDL_Color m_black, m_white;
+	size_t m_width, m_height;
 };

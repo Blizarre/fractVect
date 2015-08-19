@@ -70,8 +70,8 @@
     <LibraryPath>C:\Users\Simon\Programming\libs\SDL2-2.0.3\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDL\x64\Debug;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDLmain\x64\Debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\simdi\Documents\programmation\libs\SDL2_ttf-2.0.12\lib\x64;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDL\x64\Debug;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDLmain\x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\simdi\Documents\programmation\libs\SDL2_ttf-2.0.12\include;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
     <LinkIncremental />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -80,8 +80,8 @@
     <LibraryPath>C:\Users\Simon\Programming\libs\SDL2-2.0.3\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDL\x64\Release;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDLmain\x64\Release;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\simdi\Documents\programmation\libs\SDL2_ttf-2.0.12\lib\x64;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDL\x64\Release;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\VisualC\SDLmain\x64\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\simdi\Documents\programmation\libs\SDL2_ttf-2.0.12\include;C:\Users\simdi\Documents\programmation\libs\src\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,7 +110,7 @@
     <Link>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2_ttf.lib;SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -147,7 +147,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <OpenMPSupport>true</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -157,7 +157,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2_ttf.lib;SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>

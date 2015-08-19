@@ -7,6 +7,9 @@
 * Initialiser SDL : renvoie la surface principale
 **/
 SDLWrapper::SDLWrapper(size_t width, size_t height): m_width(width), m_height(height) {
+	if (TTF_Init() == -1) {
+		throw std::runtime_error(TTF_GetError());
+	}
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)< 0) {
 		throw std::runtime_error(SDL_GetError());
