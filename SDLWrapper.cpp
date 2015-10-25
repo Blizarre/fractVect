@@ -51,6 +51,11 @@ void SDLWrapper::processEvents()
 				m_onMouseMove(event.motion.x, event.motion.y);
 			break;
 
+		case SDL_MOUSEWHEEL:
+			if(m_onMouseWheel)
+				m_onMouseWheel(event.wheel.x, event.wheel.y);
+			break;
+
 		case SDL_KEYDOWN:
 			std::clog << "sym " << (int)(event.key.keysym.sym) << " scancode " << event.key.keysym.scancode << std::endl;
 			{

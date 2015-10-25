@@ -112,10 +112,16 @@ int main(int argc, char* argv[])
 
 	bool cont = true;
 
-	sdl.onMouseMotion([&](size_t x, size_t y)
+	sdl.onMouseMotion([&](int x, int y)
 	{
 		p.fractPosX = -p.fractWidth / 2.0f + (p.windowWidth / 2.0f - x) / (p.windowWidth);
 		p.fractPosY = -p.fractHeight / 2.0f + (p.windowHeight / 2.0f - y) / (p.windowHeight);
+	});
+
+	sdl.onMouseWheel([&](int x, int y)
+	{
+		float factor = y > 0 ? 0.9f : 1.1f;
+		p.fractWidth *= factor; p.fractHeight *= factor;
 	});
 
 	sdl.onKeyPress(SDLK_o, [&]() {
@@ -131,15 +137,6 @@ int main(int argc, char* argv[])
 			cout << "Using X86" << endl;
 			p.perf = PerfType::X86; break;
 		}
-	});
-
-
-	sdl.onKeyPress(SDLK_p, [&]() {
-		p.fractWidth *= 1.2; p.fractHeight *= 1.2;
-	});
-
-	sdl.onKeyPress(SDLK_m, [&]() {
-		p.fractWidth *= 0.8; p.fractHeight *= 0.8;
 	});
 
 	sdl.onKeyPress(SDLK_s, [&]() {

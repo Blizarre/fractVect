@@ -60,9 +60,14 @@ public:
 		m_keyboardEventBindings[keyNum] = f;
 	}
 
-	void onMouseMotion(std::function<void(size_t, size_t)> f)
+	void onMouseMotion(std::function<void(int, int)> f)
 	{
 		m_onMouseMove = f;
+	}
+
+	void onMouseWheel(std::function<void(int, int)> f)
+	{
+		m_onMouseWheel = f;
 	}
 
 	void onQuitEvent(std::function<void()> f) { m_quitEvent = f; }
@@ -74,13 +79,14 @@ public:
 		SDL_DestroyTexture(m_screen);
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
-		TTF_CloseFont(m_font);
 	}
 
 protected:
 	std::map<Uint32, std::function<void(void)>> m_keyboardEventBindings;
 	std::function<void(void)> m_quitEvent;
-	std::function<void(size_t, size_t)> m_onMouseMove;
+	std::function<void(int, int)> m_onMouseMove;
+	std::function<void(int, int)> m_onMouseWheel;
+	
 
 	SDL_Texture* m_screen;
 	SDL_Renderer* m_renderer;
