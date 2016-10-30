@@ -18,7 +18,7 @@ SDLWrapper::SDLWrapper(size_t width, size_t height): m_width(width), m_height(he
 		std::clog << "Audio & Video modules initialized correctly" << std::endl;
 	}
 
-	m_window = SDL_CreateWindow("Yep", 100, 100, static_cast<int>(width), static_cast<int>(height), 0);
+	m_window = SDL_CreateWindow("Vector Fractal generation", 100, 100, static_cast<int>(width), static_cast<int>(height), 0);
 	SDL_SetWindowBordered(m_window, SDL_TRUE);
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
 	Uint32 format = SDL_GetWindowPixelFormat(m_window);
